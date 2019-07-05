@@ -1,6 +1,6 @@
 build: false
 shallow_clone: false
-platform: 'x86'
+platform: 'x64'
 clone_folder: C:\projects\phinx
 environment:
   TESTS_PHINX_DB_ADAPTER_SQLSRV_ENABLED: true
@@ -30,16 +30,18 @@ cache:
 init:
     - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;%PATH%
     - SET COMPOSER_NO_INTERACTION=1
-    - SET PHP=1
     - SET ANSICON=121x90 (121x90)
 
 install:
   - ps: |
       # Check if installation is cached
       if (!(Test-Path C:\php)) {
-        appveyor-retry cinst --params '""/InstallDir:C:\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php_ver_target | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
+        # Windows Update Service is disabled in AppVeyor, enable to install PHP dependencies
+        Set-Service wuauserv -StartupType Manual
+        appveyor-retry cinst --no-progress --params '""/InstallDir:C:\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php_ver_target | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
+
         cd C:\php
-        copy /Y php.ini-production php.ini
+        Copy-Item php.ini-production -Destination php.ini -Force
         echo date.timezone="UTC" >> php.ini
         echo extension_dir=ext >> php.ini
         echo extension=php_openssl.dll >> php.ini
@@ -47,11 +49,11 @@ install:
         echo extension=php_intl.dll >> php.ini
         echo extension=php_fileinfo.dll >> php.ini
 
-        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/5.2.0/php_pdo_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip
-        7z x php_pdo_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -oC:\php\ext php_pdo_sqlsrv.dll > nul
+        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/5.2.0/php_pdo_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -FileName php_pdo_sqlsrv.zip
+        7z x php_pdo_sqlsrv.zip -oC:\php\ext php_pdo_sqlsrv.dll -aoa > $null
 
-        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/sqlsrv/5.2.0/php_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip
-        7z x php_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -oC:\php\ext php_sqlsrv.dll > nul
+        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/sqlsrv/5.2.0/php_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -FileName php_sqlsrv.zip
+        7z x php_sqlsrv.zip -oC:\php\ext php_sqlsrv.dll -aoa > $null
         echo extension=php_pdo_sqlsrv.dll >> php.ini
         echo extension=php_sqlsrv.dll >> php.ini
       }
