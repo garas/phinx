@@ -3,7 +3,6 @@ shallow_clone: false
 platform: 'x64'
 clone_folder: C:\projects\phinx
 environment:
-  APPVEYOR_RDP_PASSWORD: secret
   TESTS_PHINX_DB_ADAPTER_SQLSRV_ENABLED: true
   TESTS_PHINX_DB_ADAPTER_SQLSRV_HOST: localhost
   TESTS_PHINX_DB_ADAPTER_SQLSRV_USERNAME: sa
