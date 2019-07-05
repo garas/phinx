@@ -38,10 +38,10 @@ install:
       if (!(Test-Path C:\php)) {
         # Windows Update Service is disabled in AppVeyor, enable to install PHP dependencies
         Set-Service wuauserv -StartupType Manual
-        appveyor-retry cinst --no-progress --params '""/InstallDir:C:\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php_ver_target | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
+        cinst --no-progress --params '""/InstallDir:C:\php""' --ignore-checksums -y php --version ((choco search php --exact --all-versions -r | select-string -pattern $env:php_ver_target | sort { [version]($_ -split '\|' | select -last 1) } -Descending | Select-Object -first 1) -replace '[php|]','')
 
         cd C:\php
-        Copy-Item php.ini-production -Destination php.ini -Force
+        copy php.ini-production php.ini
         echo date.timezone="UTC" >> php.ini
         echo extension_dir=ext >> php.ini
         echo extension=php_openssl.dll >> php.ini
@@ -49,10 +49,10 @@ install:
         echo extension=php_intl.dll >> php.ini
         echo extension=php_fileinfo.dll >> php.ini
 
-        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/5.2.0/php_pdo_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -FileName php_pdo_sqlsrv.zip
+        Invoke-WebRequest https://windows.php.net/downloads/pecl/releases/pdo_sqlsrv/5.2.0/php_pdo_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -OutFile php_pdo_sqlsrv.zip
         7z x php_pdo_sqlsrv.zip -oC:\php\ext php_pdo_sqlsrv.dll -aoa > $null
 
-        appveyor-retry appveyor DownloadFile https://windows.php.net/downloads/pecl/releases/sqlsrv/5.2.0/php_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -FileName php_sqlsrv.zip
+        Invoke-WebRequest https://windows.php.net/downloads/pecl/releases/sqlsrv/5.2.0/php_sqlsrv-5.2.0-7.2-nts-vc15-x64.zip -OutFile php_sqlsrv.zip
         7z x php_sqlsrv.zip -oC:\php\ext php_sqlsrv.dll -aoa > $null
         echo extension=php_pdo_sqlsrv.dll >> php.ini
         echo extension=php_sqlsrv.dll >> php.ini
