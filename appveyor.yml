@@ -3,6 +3,7 @@ shallow_clone: false
 platform: 'x64'
 clone_folder: C:\projects\phinx
 environment:
+  APPVEYOR_RDP_PASSWORD: secret
   TESTS_PHINX_DB_ADAPTER_SQLSRV_ENABLED: true
   TESTS_PHINX_DB_ADAPTER_SQLSRV_HOST: localhost
   TESTS_PHINX_DB_ADAPTER_SQLSRV_USERNAME: sa
@@ -69,3 +70,6 @@ test_script:
   - sqlcmd -S localhost,1433 -U sa -P Password12! -Q "create database phinxtesting;"
   - cd c:\projects\phinx
   - vendor/bin/phpunit --no-configuration --bootstrap tests/phpunit-bootstrap.php tests/
+
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
